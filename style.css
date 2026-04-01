@@ -1,0 +1,427 @@
+/* =====================================
+   DESIGN SYSTEM
+   ===================================== */
+:root {
+    --bg-color: #0E0E11; /* Very dark, almost black background */
+    --card-bg: #16161A;  /* Slightly lighter dark grey for cards */
+    --card-border: #26262A; /* Subtle border for separation */
+    
+    --input-bg: #101013; /* Darker than card for inputs */
+    --input-border: #26262A;
+    
+    --text-primary: #F4F4F5; /* Crisp white for main text and headings */
+    --text-secondary: #A1A1AA; /* Muted gray for labels and hints */
+    
+    --accent-color: #B4E6C3; /* The mint green brand color */
+    --accent-hover: #98D0A8;
+    
+    --btn-dark-bg: #101013; /* For secondary/reset buttons */
+    --btn-dark-hover: #26262A;
+    
+    /* Semantic Colors */
+    --error-color: #FF6B6B;
+    --success-color: #51CF66;
+    
+    /* Sizing & Spacing */
+    --border-radius-card: 16px;
+    --border-radius-input: 10px;
+    --border-radius-pill: 24px;
+    --spacing-md: 1.25rem;
+    --spacing-lg: 1.5rem;
+}
+
+/* =====================================
+   GLOBAL RESET & TYPOGRAPHY
+   ===================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* =====================================
+   HEADER STYLING
+   ===================================== */
+.main-header {
+    width: 100%;
+    max-width: 1100px;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--card-border);
+    padding-bottom: 1.5rem;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+    border-radius: 12px;
+    font-size: 1.5rem;
+}
+
+.logo-text h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.logo-text p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* =====================================
+   MAIN GRID LAYOUT
+   ===================================== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 24px;
+    width: 100%;
+    max-width: 1100px;
+}
+
+/* Make it responsive single column on smaller screens */
+@media (max-width: 800px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =====================================
+   CARD COMPONENT
+   ===================================== */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--border-radius-card);
+    padding: 1.75rem; /* Increased padding */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* Increased gap */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.02); /* Enhanced shadow */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+.card-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.card-header h2 i {
+    color: var(--accent-color);
+    font-size: 1.25rem;
+}
+
+.card-header p {
+    font-size: 0.825rem;
+    color: var(--text-secondary);
+}
+
+/* =====================================
+   FORM & INPUT COMPONENTS
+   ===================================== */
+.input-grid {
+    display: grid;
+    grid-gap: 1rem;
+}
+
+.sgpa-inputs {
+    grid-template-columns: 2fr 1fr 1fr;
+    align-items: end;
+}
+
+.cgpa-inputs {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 1.25rem;
+}
+
+.attendance-inputs {
+    grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 600px) {
+    .sgpa-inputs, .cgpa-inputs, .attendance-inputs {
+        grid-template-columns: 1fr;
+    }
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+input, select, textarea {
+    width: 100%;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-primary);
+    padding: 0.85rem 1rem; /* Bolder input paddings */
+    border-radius: var(--border-radius-input);
+    font-family: inherit;
+    font-size: 0.95rem; /* slightly larger text */
+    transition: all 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Remove default spin buttons for numbers */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Textarea specific styling */
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* =====================================
+   BUTTONS
+   ===================================== */
+button {
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.primary-btn {
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-pill);
+}
+
+.primary-btn:hover {
+    background-color: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+.secondary-btn {
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--border-radius-pill);
+    align-self: flex-start;
+}
+
+.secondary-btn:hover {
+    background-color: var(--accent-hover);
+}
+
+.dark-btn {
+    background-color: var(--btn-dark-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--card-border);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-pill);
+}
+
+.dark-btn:hover {
+    background-color: var(--btn-dark-hover);
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.flex-1 { flex: 1; }
+.full-width { width: 100%; }
+
+/* Delete Button for List Items */
+.delete-btn {
+    background-color: transparent;
+    color: var(--error-color);
+    padding: 0.25rem;
+    font-size: 1.1rem;
+    opacity: 0.7;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* =====================================
+   LIST DISPLAYS (Subjects & Notes)
+   ===================================== */
+.subject-list-container, .saved-notes-container {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+}
+
+/* Custom Scrollbar for lists */
+.subject-list-container::-webkit-scrollbar,
+.saved-notes-container::-webkit-scrollbar {
+    width: 6px;
+}
+.subject-list-container::-webkit-scrollbar-thumb,
+.saved-notes-container::-webkit-scrollbar-thumb {
+    background-color: var(--card-border);
+    border-radius: 4px;
+}
+
+ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+li {
+    background-color: var(--input-bg);
+    border: 1px solid var(--card-border);
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius-input);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.subject-item-details {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.subject-name {
+    font-weight: 500;
+    flex: 2;
+}
+
+.subject-info {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    background-color: var(--card-bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.note-item-text {
+    flex: 1;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.note-item-date {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    display: block;
+    margin-top: 4px;
+}
+
+/* =====================================
+   RESULT DISPLAYS
+   ===================================== */
+.result-display {
+    background-color: var(--input-bg);
+    border: 1px solid var(--card-border);
+    padding: 1.25rem;
+    border-radius: var(--border-radius-input);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.25rem;
+}
+
+.result-display.hidden {
+    display: none;
+}
+
+.result-display:not(.centered) {
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.result-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.result-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.attendance-percentage {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.attendance-status {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.text-safe {
+    color: var(--success-color);
+}
+
+.text-danger {
+    color: var(--error-color);
+}
