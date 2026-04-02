@@ -29,11 +29,30 @@
         </div>
     </header>
 
-    <!-- Main Grid Container for Calculator Cards -->
-    <main class="dashboard-grid">
+    <!-- Main Container for Tabs & Cards -->
+    <main class="dashboard-container">
+        
+        <!-- Navigation Tabs -->
+        <nav class="tabs-nav">
+            <button class="tab-btn active" data-target="dashboard-tab">Dashboard</button>
+            <button class="tab-btn" data-target="sgpa-tab">SGPA</button>
+            <button class="tab-btn" data-target="cgpa-tab">CGPA</button>
+            <button class="tab-btn" data-target="semesters-tab">Semesters</button>
+            <button class="tab-btn" data-target="attendance-tab">Attendance</button>
+            <button class="tab-btn" data-target="pdfs-tab">PDFs</button>
+            <button class="tab-btn" data-target="notes-tab">Notes</button>
+        </nav>
+
+        <!-- Dashboard Welcome Section -->
+        <section id="dashboard-tab" class="tab-pane active card dashboard-card">
+            <div class="card-header" style="text-align: center; border-bottom: none;">
+                <h2 style="justify-content: center; font-size: 1.5rem; margin-bottom: 0.5rem;"><i class="ph ph-hand-waving"></i> Welcome!</h2>
+                <p style="font-size: 1rem;">Use the tabs above to manage your SGPA, track attendance, organize PDFs, and more. All data is saved automatically.</p>
+            </div>
+        </section>
         
         <!-- SGPA Calculator Section -->
-        <section class="card sgpa-card">
+        <section id="sgpa-tab" class="tab-pane card sgpa-card">
             <div class="card-header">
                 <h2><i class="ph ph-calculator"></i> SGPA Calculator</h2>
                 <p>Calculate your Semester Grade Point Average</p>
@@ -88,7 +107,7 @@
         </section>
 
         <!-- CGPA Calculator Section -->
-        <section class="card cgpa-card">
+        <section id="cgpa-tab" class="tab-pane card cgpa-card">
             <div class="card-header">
                 <h2><i class="ph ph-graduation-cap"></i> CGPA Calculator</h2>
                 <p>Calculate your Cumulative Grade Point Average</p>
@@ -126,36 +145,111 @@
             </div>
         </section>
 
+        <!-- Semester Tracker Section -->
+        <section id="semesters-tab" class="tab-pane card semester-card">
+            <div class="card-header">
+                <h2><i class="ph ph-list-numbers"></i> Semester Tracker</h2>
+                <p>Track your SGPAs and calculate overall CGPA</p>
+            </div>
+
+            <div class="input-grid attendance-inputs">
+                <div class="input-group">
+                    <label for="sem-name">Semester Name</label>
+                    <input type="text" id="sem-name" placeholder="e.g., Semester 1">
+                </div>
+                <div class="input-group">
+                    <label for="sem-sgpa">SGPA</label>
+                    <input type="number" id="sem-sgpa" placeholder="e.g., 8.5" step="0.01" min="0" max="10">
+                </div>
+            </div>
+            
+            <div class="button-group" style="margin-top: 0.5rem;">
+                <button id="add-sem-btn" class="secondary-btn"><i class="ph ph-plus"></i> Add Semester</button>
+                <button id="reset-sem-btn" class="dark-btn">Reset All</button>
+            </div>
+
+            <div class="subject-list-container">
+                <ul id="semester-list"></ul>
+            </div>
+
+            <div id="sem-result-display" class="result-display centered" style="display: none; margin-top: 1rem;">
+                <span class="result-label" style="align-self: center; margin-bottom: 0.5rem;">Average CGPA</span>
+                <h3 id="sem-cgpa-value" class="attendance-percentage">0.00</h3>
+                <p class="attendance-status text-secondary" style="color: var(--text-secondary);">Based on all semesters</p>
+            </div>
+        </section>
+
         <!-- Attendance Calculator Section -->
-        <section class="card attendance-card">
+        <section id="attendance-tab" class="tab-pane card attendance-card">
             <div class="card-header">
                 <h2><i class="ph ph-calendar-check"></i> Attendance Calculator</h2>
                 <p>Track your attendance percentage</p>
             </div>
 
-            <div class="input-grid attendance-inputs">
+            <div class="input-grid sgpa-inputs">
                 <div class="input-group">
-                    <label for="total-classes">Total Classes</label>
+                    <label for="att-sub-name">Subject</label>
+                    <input type="text" id="att-sub-name" placeholder="e.g., Physics">
+                </div>
+                <div class="input-group">
+                    <label for="total-classes">Total</label>
                     <input type="number" id="total-classes" placeholder="e.g., 50" min="1">
                 </div>
                 <div class="input-group">
-                    <label for="attended-classes">Classes Attended</label>
+                    <label for="attended-classes">Attended</label>
                     <input type="number" id="attended-classes" placeholder="e.g., 40" min="0">
                 </div>
             </div>
             
             <div class="button-group" style="margin-top: 0.5rem;">
-                <button id="reset-attendance-btn" class="dark-btn flex-1">Reset</button>
+                <button id="add-att-subject-btn" class="secondary-btn"><i class="ph ph-plus"></i> Add Subject</button>
+                <button id="reset-attendance-btn" class="dark-btn">Reset</button>
             </div>
 
-            <div id="attendance-result-display" class="result-display centered">
+            <div class="subject-list-container">
+                <ul id="att-subject-list"></ul>
+            </div>
+
+            <div id="attendance-result-display" class="result-display centered" style="display: none; margin-top: 1rem;">
+                <span class="result-label" style="align-self: center; margin-bottom: 0.5rem;">Overall Attendance</span>
                 <h3 id="attendance-value" class="attendance-percentage">0%</h3>
                 <p id="attendance-message" class="attendance-status">Enter values above</p>
             </div>
         </section>
 
+        <!-- PDF Manager Section -->
+        <section id="pdfs-tab" class="tab-pane card pdf-card">
+            <div class="card-header">
+                <h2><i class="ph ph-file-pdf"></i> PDF Manager</h2>
+                <p>Organize your study materials and links</p>
+            </div>
+
+            <div class="input-grid" style="grid-template-columns: 1fr 1fr 2fr; align-items: end;">
+                <div class="input-group">
+                    <label for="pdf-subject">Subject</label>
+                    <input type="text" id="pdf-subject" placeholder="e.g., Physics">
+                </div>
+                <div class="input-group">
+                    <label for="pdf-name">PDF Name</label>
+                    <input type="text" id="pdf-name" placeholder="e.g., Chapter 1">
+                </div>
+                <div class="input-group" style="grid-column: 1 / -1;">
+                    <label for="pdf-link">Link</label>
+                    <input type="url" id="pdf-link" placeholder="e.g., https://drive.google.com/...">
+                </div>
+            </div>
+            
+            <div class="button-group" style="margin-top: 0.5rem;">
+                <button id="add-pdf-btn" class="secondary-btn"><i class="ph ph-plus"></i> Add PDF</button>
+            </div>
+
+            <div class="subject-list-container" style="max-height: 250px;">
+                <div id="pdf-list-container"></div>
+            </div>
+        </section>
+
         <!-- Daily Learning Notes Section -->
-        <section class="card notes-card">
+        <section id="notes-tab" class="tab-pane card notes-card">
             <div class="card-header">
                 <h2><i class="ph ph-book-bookmark"></i> Daily Learning Notes</h2>
                 <p>Keep track of what you learn every day</p>
