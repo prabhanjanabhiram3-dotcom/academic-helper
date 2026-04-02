@@ -29,11 +29,23 @@ function safeSetStorage(key, value) {
    GLOBAL STATE & INITIALIZATION
    ===================================== */
 let subjectsList = [];
+let attSubjectsList = [];
+let semestersList = [];
+let pdfsList = [];
 let notesList = [];
 
 try {
     const savedSubjects = safeGetStorage('academicHelperSubjects');
     if (savedSubjects) subjectsList = JSON.parse(savedSubjects);
+
+    const savedAttSubjects = safeGetStorage('academicHelperAttSubjects');
+    if (savedAttSubjects) attSubjectsList = JSON.parse(savedAttSubjects);
+
+    const savedSemesters = safeGetStorage('academicHelperSemesters');
+    if (savedSemesters) semestersList = JSON.parse(savedSemesters);
+
+    const savedPdfs = safeGetStorage('academicHelperPdfs');
+    if (savedPdfs) pdfsList = JSON.parse(savedPdfs);
 
     const savedNotes = safeGetStorage('academicHelperNotes');
     if (savedNotes) notesList = JSON.parse(savedNotes);
@@ -49,6 +61,9 @@ function init() {
     populateElements();
     setupEventListeners();
     renderSubjects();
+    renderAttSubjects();
+    renderSemesters();
+    renderPdfs();
     renderNotes();
 }
 
@@ -75,18 +90,41 @@ function populateElements() {
     El.cgpaResultDisplay = document.getElementById('cgpa-result-display');
     El.cgpaValue = document.getElementById('cgpa-value');
 
+    // Semester Tracker
+    El.semName = document.getElementById('sem-name');
+    El.semSgpa = document.getElementById('sem-sgpa');
+    El.addSemBtn = document.getElementById('add-sem-btn');
+    El.semListUl = document.getElementById('semester-list');
+    El.semResultDisplay = document.getElementById('sem-result-display');
+    El.semCgpaValue = document.getElementById('sem-cgpa-value');
+    El.resetSemBtn = document.getElementById('reset-sem-btn');
+
     // Attendance
+    El.attSubName = document.getElementById('att-sub-name');
     El.totalClasses = document.getElementById('total-classes');
     El.attendedClasses = document.getElementById('attended-classes');
+    El.addAttSubjectBtn = document.getElementById('add-att-subject-btn');
+    El.attSubjectListUl = document.getElementById('att-subject-list');
     El.attResultDisplay = document.getElementById('attendance-result-display');
     El.attValue = document.getElementById('attendance-value');
     El.attMessage = document.getElementById('attendance-message');
     El.resetAttBtn = document.getElementById('reset-attendance-btn');
 
+    // PDF Manager
+    El.pdfSubject = document.getElementById('pdf-subject');
+    El.pdfName = document.getElementById('pdf-name');
+    El.pdfLink = document.getElementById('pdf-link');
+    El.addPdfBtn = document.getElementById('add-pdf-btn');
+    El.pdfListContainer = document.getElementById('pdf-list-container');
+
     // Notes
     El.noteInput = document.getElementById('note-input');
     El.saveNoteBtn = document.getElementById('save-note-btn');
     El.notesListUl = document.getElementById('notes-list');
+
+    // Tabs
+    El.tabBtns = document.querySelectorAll('.tab-btn');
+    El.tabPanes = document.querySelectorAll('.tab-pane');
 }
 
 // Attach all event handlers to buttons and inputs
@@ -100,13 +138,38 @@ function setupEventListeners() {
     El.calcCgpaBtn.addEventListener('click', calculateCGPA);
     El.resetCgpaBtn.addEventListener('click', resetCGPA);
 
-    // Attendance Listeners (Real-time calculation on typing)
-    El.totalClasses.addEventListener('input', calculateAttendance);
-    El.attendedClasses.addEventListener('input', calculateAttendance);
+    // Semester Tracker Listeners
+    if(El.addSemBtn) El.addSemBtn.addEventListener('click', addSemester);
+    if(El.resetSemBtn) El.resetSemBtn.addEventListener('click', resetSemesters);
+
+    // Attendance Listeners
+    El.addAttSubjectBtn.addEventListener('click', addAttSubject);
     if(El.resetAttBtn) El.resetAttBtn.addEventListener('click', resetAttendance);
+
+    // PDF Manager Listeners
+    if(El.addPdfBtn) El.addPdfBtn.addEventListener('click', addPdf);
 
     // Notes Listeners
     El.saveNoteBtn.addEventListener('click', saveNote);
+
+    // Tab Navigation Switcher
+    if (El.tabBtns) {
+        El.tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active classes
+                El.tabBtns.forEach(b => b.classList.remove('active'));
+                El.tabPanes.forEach(p => p.classList.remove('active'));
+
+                // Add active to clicked target
+                btn.classList.add('active');
+                const targetId = btn.getAttribute('data-target');
+                const targetPane = document.getElementById(targetId);
+                if (targetPane) {
+                    targetPane.classList.add('active');
+                }
+            });
+        });
+    }
 }
 
 /* =====================================
@@ -260,27 +323,244 @@ function resetCGPA() {
 
 
 /* =====================================
+   SEMESTER TRACKER LOGIC
+   ===================================== */
+function addSemester() {
+    const nameStr = El.semName.value.trim();
+    const sgpaVal = parseFloat(El.semSgpa.value);
+
+    if (!nameStr) {
+        alert("Please enter a semester name.");
+        return;
+    }
+    if (isNaN(sgpaVal) || sgpaVal < 0 || sgpaVal > 10) {
+        alert("Please enter a valid SGPA between 0 and 10.");
+        return;
+    }
+
+    const newSem = {
+        id: Date.now().toString(),
+        name: nameStr,
+        sgpa: sgpaVal
+    };
+
+    semestersList.push(newSem);
+    saveSemestersData();
+    renderSemesters();
+
+    El.semName.value = '';
+    El.semSgpa.value = '';
+}
+
+function removeSemester(id) {
+    semestersList = semestersList.filter(sem => sem.id !== id);
+    saveSemestersData();
+    renderSemesters();
+}
+
+function renderSemesters() {
+    if (!El.semListUl) return;
+
+    El.semListUl.innerHTML = '';
+    
+    if (semestersList.length === 0) {
+        El.semResultDisplay.style.display = 'none';
+        return;
+    }
+    
+    El.semResultDisplay.style.display = 'flex';
+    
+    let totalSgpa = 0;
+
+    semestersList.forEach(sem => {
+        totalSgpa += sem.sgpa;
+
+        const li = document.createElement('li');
+        
+        li.innerHTML = `
+            <div class="subject-item-details">
+                <span class="subject-name">${sem.name}</span>
+                <span class="subject-info text-safe" style="font-weight:bold;">${sem.sgpa.toFixed(2)}</span>
+            </div>
+            <button class="delete-btn" title="Remove Semester">
+                <i class="ph ph-trash"></i>
+            </button>
+        `;
+        
+        const deleteBtn = li.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', () => removeSemester(sem.id));
+
+        El.semListUl.appendChild(li);
+    });
+
+    const averageCgpa = totalSgpa / semestersList.length;
+    El.semCgpaValue.textContent = averageCgpa.toFixed(2);
+}
+
+function resetSemesters() {
+    semestersList = [];
+    saveSemestersData();
+    renderSemesters();
+    
+    El.semName.value = '';
+    El.semSgpa.value = '';
+    
+    if (El.semResultDisplay) El.semResultDisplay.style.display = 'none';
+}
+
+function saveSemestersData() {
+    safeSetStorage('academicHelperSemesters', JSON.stringify(semestersList));
+}
+
+
+/* =====================================
    ATTENDANCE CALCULATOR LOGIC
    ===================================== */
-function calculateAttendance() {
+function addAttSubject() {
+    const nameStr = El.attSubName.value.trim();
     const total = parseFloat(El.totalClasses.value);
     const attended = parseFloat(El.attendedClasses.value);
 
-    if (isNaN(total) || isNaN(attended) || total <= 0) {
-        El.attValue.textContent = '0%';
-        El.attMessage.textContent = 'Enter valid classes below';
-        El.attValue.className = 'attendance-percentage';
-        El.attMessage.className = 'attendance-status';
+    if (!nameStr) {
+        alert("Please enter a subject name.");
+        return;
+    }
+    if (isNaN(total) || total <= 0) {
+        alert("Please enter a valid positive number for total classes.");
+        return;
+    }
+    if (isNaN(attended) || attended < 0) {
+        alert("Please enter a valid number for attended classes.");
+        return;
+    }
+    if (attended > total) {
+        alert("Attended classes cannot exceed total classes.");
         return;
     }
 
-    if (attended > total) {
-        El.attValue.textContent = 'Err';
-        El.attMessage.textContent = 'Attended cannot exceed Total';
-        El.attValue.className = 'attendance-percentage text-danger';
-        El.attMessage.className = 'attendance-status text-danger';
+    const newSub = {
+        id: Date.now().toString(),
+        name: nameStr,
+        total: total,
+        attended: attended
+    };
+
+    attSubjectsList.push(newSub);
+    saveAttSubjectsData();
+    renderAttSubjects();
+
+    El.attSubName.value = '';
+    El.totalClasses.value = '';
+    El.attendedClasses.value = '';
+}
+
+function removeAttSubject(id) {
+    attSubjectsList = attSubjectsList.filter(sub => sub.id !== id);
+    saveAttSubjectsData();
+    renderAttSubjects();
+}
+
+let editingAttSubjectId = null;
+
+function renderAttSubjects() {
+    El.attSubjectListUl.innerHTML = '';
+    
+    if (attSubjectsList.length === 0) {
+        El.attResultDisplay.style.display = 'none';
         return;
     }
+    
+    El.attResultDisplay.style.display = 'flex';
+
+    let overallTotal = 0;
+    let overallAttended = 0;
+
+    attSubjectsList.forEach(subject => {
+        overallTotal += subject.total;
+        overallAttended += subject.attended;
+
+        const li = document.createElement('li');
+        
+        if (editingAttSubjectId === subject.id) {
+            li.innerHTML = `
+                <div class="subject-item-details" style="flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+                    <span class="subject-name" style="flex-basis: 100%; margin-bottom: 0.25rem;">${subject.name}</span>
+                    <input type="number" id="edit-attended-${subject.id}" value="${subject.attended}" style="width: 70px; padding: 0.25rem; font-size: 0.85rem;" min="0">
+                    <span style="color: var(--text-secondary);">/</span>
+                    <input type="number" id="edit-total-${subject.id}" value="${subject.total}" style="width: 70px; padding: 0.25rem; font-size: 0.85rem;" min="1">
+                    <div style="display:flex; gap:0.5rem; margin-left: auto;">
+                        <button class="secondary-btn save-edit-btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px;">Save</button>
+                        <button class="dark-btn cancel-edit-btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px;">Cancel</button>
+                    </div>
+                </div>
+            `;
+            
+            const saveBtn = li.querySelector('.save-edit-btn');
+            saveBtn.addEventListener('click', () => {
+                const newAttended = parseFloat(document.getElementById(`edit-attended-${subject.id}`).value);
+                const newTotal = parseFloat(document.getElementById(`edit-total-${subject.id}`).value);
+                
+                if (isNaN(newTotal) || newTotal <= 0) {
+                    alert('Invalid total classes.');
+                    return;
+                }
+                if (isNaN(newAttended) || newAttended < 0 || newAttended > newTotal) {
+                    alert('Invalid attended classes. Cannot exceed total classes.');
+                    return;
+                }
+                
+                subject.attended = newAttended;
+                subject.total = newTotal;
+                
+                editingAttSubjectId = null;
+                saveAttSubjectsData();
+                renderAttSubjects();
+            });
+
+            const cancelBtn = li.querySelector('.cancel-edit-btn');
+            cancelBtn.addEventListener('click', () => {
+                editingAttSubjectId = null;
+                renderAttSubjects();
+            });
+            
+        } else {
+            const percentage = ((subject.attended / subject.total) * 100).toFixed(1);
+            const statusClass = percentage >= 75 ? 'text-safe' : 'text-danger';
+            
+            li.innerHTML = `
+                <div class="subject-item-details">
+                    <span class="subject-name">${subject.name}</span>
+                    <span class="subject-info">${subject.attended}/${subject.total}</span>
+                    <span class="subject-info ${statusClass}" style="font-weight:bold;">${percentage}%</span>
+                </div>
+                <div style="display: flex; gap: 0.25rem;">
+                    <button class="edit-btn" title="Edit Subject">
+                        <i class="ph ph-pencil-simple"></i>
+                    </button>
+                    <button class="delete-btn" title="Remove Subject">
+                        <i class="ph ph-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            const editBtn = li.querySelector('.edit-btn');
+            editBtn.addEventListener('click', () => {
+                editingAttSubjectId = subject.id;
+                renderAttSubjects();
+            });
+
+            const deleteBtn = li.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', () => removeAttSubject(subject.id));
+        }
+
+        El.attSubjectListUl.appendChild(li);
+    });
+
+    updateOverallAttendance(overallTotal, overallAttended);
+}
+
+function updateOverallAttendance(total, attended) {
+    if (total <= 0) return;
 
     const percentage = (attended / total) * 100;
     El.attValue.textContent = percentage.toFixed(1) + '%';
@@ -290,19 +570,27 @@ function calculateAttendance() {
         El.attMessage.className = 'attendance-status text-safe';
         El.attMessage.textContent = "You're safe! Keep it up.";
     } else {
+        const requiredClasses = Math.ceil((0.75 * total - attended) / 0.25);
         El.attValue.className = 'attendance-percentage text-danger';
         El.attMessage.className = 'attendance-status text-danger';
-        El.attMessage.textContent = `Warning! You need to attend ${requiredClasses} more consecutive classes to reach 75%.`;
+        El.attMessage.textContent = `Warning! You need to attend ${requiredClasses > 0 ? requiredClasses : 'some'} more consecutive classes to reach 75%.`;
     }
 }
 
 function resetAttendance() {
+    attSubjectsList = [];
+    saveAttSubjectsData();
+    renderAttSubjects();
+
+    El.attSubName.value = '';
     El.totalClasses.value = '';
     El.attendedClasses.value = '';
-    El.attValue.textContent = '0%';
-    El.attMessage.textContent = 'Enter valid classes below';
-    El.attValue.className = 'attendance-percentage';
-    El.attMessage.className = 'attendance-status';
+    
+    El.attResultDisplay.style.display = 'none';
+}
+
+function saveAttSubjectsData() {
+    safeSetStorage('academicHelperAttSubjects', JSON.stringify(attSubjectsList));
 }
 
 
@@ -337,6 +625,8 @@ function removeNote(id) {
 }
 
 function renderNotes() {
+    if(!El.notesListUl) return;
+
     El.notesListUl.innerHTML = '';
 
     notesList.forEach(note => {
@@ -361,6 +651,109 @@ function renderNotes() {
 
 function saveNotesData() {
     safeSetStorage('academicHelperNotes', JSON.stringify(notesList));
+}
+
+
+/* =====================================
+   PDF MANAGER LOGIC
+   ===================================== */
+function addPdf() {
+    let subStr = El.pdfSubject.value.trim();
+    const nameStr = El.pdfName.value.trim();
+    const linkStr = El.pdfLink.value.trim();
+
+    if (!subStr || !nameStr || !linkStr) {
+        alert("Please fill in all PDF fields (Subject, Name, and Link).");
+        return;
+    }
+    
+    // Normalize subject string to Title Case to treat 'physics' and 'Physics' the same
+    subStr = subStr.split(' ').map(word => 
+        word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : ''
+    ).join(' ').trim();
+    
+    let validLink = linkStr;
+    if (!validLink.startsWith('http://') && !validLink.startsWith('https://')) {
+        validLink = 'https://' + validLink;
+    }
+
+    const newPdf = {
+        id: Date.now().toString(),
+        subject: subStr,
+        name: nameStr,
+        link: validLink
+    };
+
+    pdfsList.push(newPdf);
+    savePdfData();
+    renderPdfs();
+
+    El.pdfSubject.value = '';
+    El.pdfName.value = '';
+    El.pdfLink.value = '';
+}
+
+function removePdf(id) {
+    pdfsList = pdfsList.filter(pdf => pdf.id !== id);
+    savePdfData();
+    renderPdfs();
+}
+
+function renderPdfs() {
+    if (!El.pdfListContainer) return;
+    
+    El.pdfListContainer.innerHTML = '';
+    
+    if (pdfsList.length === 0) return;
+
+    // Grouping by subject
+    const grouped = {};
+    pdfsList.forEach(pdf => {
+        if (!grouped[pdf.subject]) grouped[pdf.subject] = [];
+        grouped[pdf.subject].push(pdf);
+    });
+
+    for (let sub in grouped) {
+        const groupDiv = document.createElement('div');
+        groupDiv.style.marginBottom = '1rem';
+        
+        const heading = document.createElement('h3');
+        heading.textContent = sub;
+        heading.style.fontSize = '0.95rem';
+        heading.style.marginBottom = '0.5rem';
+        heading.style.color = 'var(--text-secondary)';
+        heading.style.textTransform = 'uppercase';
+        heading.style.letterSpacing = '0.05em';
+        groupDiv.appendChild(heading);
+        
+        const ul = document.createElement('ul');
+        grouped[sub].forEach(pdf => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <div class="subject-item-details" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                    <span class="subject-name" style="word-break:break-all; padding-right:10px;">${pdf.name}</span>
+                    <div style="display:flex; gap:0.5rem; align-items:center;">
+                        <a href="${pdf.link}" target="_blank" class="secondary-btn" style="padding:0.25rem 0.5rem; font-size:0.8rem; border-radius:4px; text-decoration:none;">Open</a>
+                        <button class="delete-btn" title="Remove PDF" style="margin:0; padding:0.25rem;">
+                            <i class="ph ph-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            const deleteBtn = li.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', () => removePdf(pdf.id));
+            
+            ul.appendChild(li);
+        });
+        
+        groupDiv.appendChild(ul);
+        El.pdfListContainer.appendChild(groupDiv);
+    }
+}
+
+function savePdfData() {
+    safeSetStorage('academicHelperPdfs', JSON.stringify(pdfsList));
 }
 
 // Ensure the code only runs after the document is explicitly loaded!
